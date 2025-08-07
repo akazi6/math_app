@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数学問題</title>
+</head>
+<body>
+    <p>ようこそ、{{ username }} さん！ <a href="{{ url_for('logout') }}">ログアウト</a></p>
+    <h2>{{ problem_name }}の問題</h2>
+    <p><strong>問題:</strong> {{ question }}</p>
+
+    <form method="POST">
+        <input type="text" name="answer" placeholder="答えを入力" required>
+        <input type="hidden" name="correct_answer" value="{{ correct_answer }}">
+        <input type="hidden" name="question" value="{{ question }}">
+        <input type="hidden" name="problem_name" value="{{ problem_name }}">
+        <button type="submit">送信</button>
+    </form>
+
+    {% if accuracy %}
+        <p>正答率: {{ accuracy }}</p>
+    {% endif %}
+
+    {% if result %}
+        <p>{{ result }}</p>
+        <form method="GET">
+            <button type="submit">次の問題へ</button>
+        </form>
+    {% endif %}
+
+    <form action="{{ url_for('reset') }}" method="GET" style="margin-top: 20px;">
+        <button type="submit">正答率リセット</button>
+    </form>
+</body>
+</html>
