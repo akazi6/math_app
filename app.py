@@ -133,18 +133,30 @@ def generate_quadratic_equation():
     answer = f"x = {-m} または x = {-n}"
     return question, answer
 
-def generate_problem():
-    problem_types = [
+def generate_problem(difficulty='normal'):
+    easy_problems = [
         ('足し算', generate_addition),
         ('引き算', generate_subtraction),
+    ]
+    normal_problems = easy_problems + [
         ('掛け算', generate_multiplication),
         ('割り算', generate_division),
+        ('比例', generate_proportional),
+        ('反比例', generate_inverse_proportional),
+    ]
+    hard_problems = normal_problems + [
         ('一次方程式', generate_linear_equation),
         ('因数分解', generate_factoring),
         ('2次方程式', generate_quadratic_equation),
-        ('比例', generate_proportional),             # ← 追加
-        ('反比例', generate_inverse_proportional),   # ← 追加
     ]
+
+    if difficulty == 'easy':
+        problem_types = easy_problems
+    elif difficulty == 'hard':
+        problem_types = hard_problems
+    else:
+        problem_types = normal_problems
+
     problem_name, func = random.choice(problem_types)
     question, answer = func()
     return problem_name, question, answer
@@ -206,11 +218,22 @@ def home():
         session['correct_count'] = 0
         session['total_count'] = 0
 
+    if request.method == 'GET':
+        difficulty = request.args.get('difficulty', session.get('difficulty', 'normal'))
+        session['difficulty'] = difficulty  # 選択された難易度をセッションに保存
+        problem_name, question, correct_answer = generate_problem(difficulty)
+        return render_template('index.html',
+                               question=question,
+                               correct_answer=correct_answer,
+                               problem_name=problem_name,
+                               username=session['username'],
+                               difficulty=difficulty)
+
     if request.method == 'POST':
         user_answer = request.form.get('answer')
         correct_answer = request.form.get('correct_answer')
         question = request.form.get('question')
-        problem_name = request.form.get('problem_name')
+        problem_name = request.form.get('problem_name')    
 
         session['total_count'] += 1
 
@@ -242,15 +265,18 @@ def home():
                                result=result,
                                problem_name=problem_name,
                                accuracy=accuracy,
-                               username=username)
+                               username=username,
+                               difficulty=session.get('difficulty', 'normal'))
 
     # GETリクエストで新しい問題を出題
-    problem_name, question, correct_answer = generate_problem()
+    difficulty = session.get('difficulty', 'normal')
+    problem_name, question, correct_answer = generate_problem(difficulty)
     return render_template('index.html',
                            question=question,
                            correct_answer=correct_answer,
                            problem_name=problem_name,
-                           username=session['username'])
+                           username=session['username'],
+                           difficulty=difficulty)
 
 @app.route('/')
 def index():

@@ -65,5 +65,17 @@
     <form action="{{ url_for('reset') }}" method="GET" style="margin-top: 20px;">
         <button type="submit">正答率リセット</button>
     </form>
+
+   <form method="GET" action="{{ url_for('home') }}">
+     <label>難易度を選んでください：</label>
+     <select name="difficulty">
+        <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>簡単</option>
+        <option value="normal" {% if difficulty == 'normal' %}selected{% endif %}>普通</option>
+        <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>難しい</option>
+     </select>
+     <input type="submit" value="問題を出題">
+    </form>
+ 
+
 </body>
 </html>
