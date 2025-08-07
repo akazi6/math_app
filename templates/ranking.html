@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ランキング</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            font-size: 16px;
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        a {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        @media (max-width: 480px) {
+            th, td {
+                font-size: 12px;
+                padding: 6px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>正答率ランキング</h1>
+    <table>
+        <tr>
+            <th>順位</th>
+            <th>ユーザー名</th>
+            <th>正解数</th>
+            <th>出題数</th>
+            <th>正答率</th>
+        </tr>
+        {% for r in rankings %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ r[0] }}</td>
+            <td>{{ r[1] }}</td>
+            <td>{{ r[2] }}</td>
+            <td>{{ '%.1f' % r[3] }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('home') }}">🏠 ホームに戻る</a>
+</body>
+</html>

@@ -1,22 +1,50 @@
 <!DOCTYPE html>
 <html>
-<head><title>ユーザー登録</title></head>
+<head>
+    <meta charset="UTF-8" />
+    <title>ユーザー登録</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            font-size: 16px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input[type="text"], input[type="password"], input[type="submit"] {
+            font-size: 18px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
 <body>
-<h2>ユーザー登録</h2>
-<form method="POST">
-  <input type="text" name="username" placeholder="ユーザー名" required><br>
-  <input type="password" name="password" placeholder="パスワード" required><br>
-  <button type="submit">登録</button>
-</form>
-<p><a href="{{ url_for('login') }}">ログインはこちら</a></p>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul>
-      {% for message in messages %}
-      <li style="color:red;">{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+    <h1>ユーザー登録</h1>
+    <form method="POST">
+        <input type="text" name="username" placeholder="ユーザー名を入力" required />
+        <input type="password" name="password" placeholder="パスワードを入力" required />
+        <input type="submit" value="登録" />
+    </form>
+    <p>すでに登録済みの方は <a href="{{ url_for('login') }}">ログインページ</a> へ</p>
 </body>
 </html>

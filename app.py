@@ -5,6 +5,37 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = '5102'  # セッションを使うために必須
 
+USER_FILE = 'users.json'
+
+def load_users():
+    global users
+    try:
+        with open(USER_FILE, 'r', encoding='utf-8') as f:
+            users = json.load(f)
+    except FileNotFoundError:
+        users = {}
+
+def save_users():
+    with open(USER_FILE, 'w', encoding='utf-8') as f:
+        json.dump(users, f, ensure_ascii=False, indent=2)
+
+import json
+
+# ファイル名は自由に決めてOK
+DATA_FILE = 'user_scores.json'
+
+def save_scores():
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
+        json.dump(user_scores, f, ensure_ascii=False, indent=2)
+
+def load_scores():
+    global user_scores
+    try:
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            user_scores = json.load(f)
+    except FileNotFoundError:
+        user_scores = {}
+
 # 簡易ユーザーDB（本番ではDBを使うべき）
 users = {
     'user1': generate_password_hash('password1'),
@@ -19,6 +50,10 @@ def generate_multiplication():
     question = f"{a} × {b}"
     answer = a * b
     return question, answer
+
+# アプリの冒頭付近に追加（user_scoresのところ）
+
+user_scores = {}  # 例：{'user1': {'correct': 10, 'total': 15}, ...}
 
 def generate_proportional():
     k = random.randint(1, 10)
@@ -130,17 +165,18 @@ def register():
 
         # パスワードをハッシュ化して保存
         users[username] = generate_password_hash(password)
+        save_users()
         flash('登録が完了しました。ログインしてください。')
         return redirect(url_for('login'))
 
     return render_template('register.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        print(f'Login attempt: username={username}, password={password}')
         if username in users and check_password_hash(users[username], password):
             session['username'] = username
             session['correct_count'] = 0
@@ -151,8 +187,17 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
+scores_loaded = False
 
-@app.route('/', methods=['GET', 'POST'])
+@app.before_request
+def load_scores_once():
+    global scores_loaded
+    if not scores_loaded:
+        load_scores()
+        load_users()
+        scores_loaded = True
+
+@app.route('/home', methods=['GET', 'POST'])
 def home():
     if 'username' not in session:
         return redirect(url_for('login'))
@@ -169,6 +214,7 @@ def home():
 
         session['total_count'] += 1
 
+        is_correct = False
         if user_answer:
             is_correct = (user_answer.replace(' ', '') == str(correct_answer).replace(' ', ''))
             if is_correct:
@@ -177,7 +223,18 @@ def home():
         else:
             result = '入力が必要です。'
 
+        # ユーザーのスコア更新
+        username = session.get('username')
+        if username not in user_scores:
+            user_scores[username] = {'correct': 0, 'total': 0}
+
+        user_scores[username]['total'] += 1
+        if is_correct:
+            user_scores[username]['correct'] += 1
+
         accuracy = f"{session['correct_count']} / {session['total_count']}（{(session['correct_count'] / session['total_count'] * 100):.1f}%）"
+
+        save_scores()
 
         return render_template('index.html',
                                question=question,
@@ -185,22 +242,19 @@ def home():
                                result=result,
                                problem_name=problem_name,
                                accuracy=accuracy,
-                               username=session.get('username'))
+                               username=username)
 
-    else:
-        problem_name, question, correct_answer = generate_problem()
-        accuracy = None
-        if 'total_count' in session and session['total_count'] > 0:
-            accuracy = f"{session['correct_count']} / {session['total_count']}（{(session['correct_count'] / session['total_count'] * 100):.1f}%）"
+    # GETリクエストで新しい問題を出題
+    problem_name, question, correct_answer = generate_problem()
+    return render_template('index.html',
+                           question=question,
+                           correct_answer=correct_answer,
+                           problem_name=problem_name,
+                           username=session['username'])
 
-        return render_template('index.html',
-                               question=question,
-                               correct_answer=correct_answer,
-                               result=None,
-                               problem_name=problem_name,
-                               accuracy=accuracy,
-                               username=session.get('username'))
-
+@app.route('/')
+def index():
+    return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
@@ -209,8 +263,35 @@ def logout():
 
 @app.route('/reset')
 def reset():
-    session.clear()  # セッションの情報をすべて削除（正答率もリセット）
-    return redirect(url_for('home'))  # ホーム画面にリダイレクト
+    # ユーザー名だけ保持して、他をリセット
+    username = session.get('username')  # 一時保存
+
+    session.clear()  # 全部消す
+
+    if username:
+        session['username'] = username  # ユーザー名だけ復元
+
+    session['correct_count'] = 0
+    session['total_count'] = 0
+
+    return redirect(url_for('home'))
+
+@app.route('/ranking')
+def ranking():
+    rankings = []
+    for username, score in user_scores.items():
+        correct = score['correct']
+        total = score['total']
+        if total == 0:
+            accuracy = 0
+        else:
+            accuracy = correct / total * 100
+        rankings.append((username, correct, total, accuracy))
+
+    # 正答率でソート（降順）
+    rankings.sort(key=lambda x: x[3], reverse=True)
+
+    return render_template('ranking.html', rankings=rankings)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)

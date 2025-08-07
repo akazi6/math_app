@@ -1,10 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>数学問題</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: auto;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        a {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .result, .accuracy {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <p>ようこそ、{{ username }} さん！ <a href="{{ url_for('logout') }}">ログアウト</a></p>
+
     <h2>{{ problem_name }}の問題</h2>
     <p><strong>問題:</strong> {{ question }}</p>
 
@@ -16,12 +49,14 @@
         <button type="submit">送信</button>
     </form>
 
+    <a href="{{ url_for('ranking') }}">📊 ランキングを見る</a>
+
     {% if accuracy %}
-        <p>正答率: {{ accuracy }}</p>
+        <p class="accuracy">正答率: {{ accuracy }}</p>
     {% endif %}
 
     {% if result %}
-        <p>{{ result }}</p>
+        <p class="result">{{ result }}</p>
         <form method="GET">
             <button type="submit">次の問題へ</button>
         </form>
