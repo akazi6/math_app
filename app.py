@@ -130,7 +130,8 @@ def generate_quadratic_equation():
     b = m + n
     c = m * n
     question = f"x² + {b}x + {c} = 0 の解を求めよ。"
-    answer = f"x = {-m} または x = {-n}"
+    answer = {-m, -n}
+    user_answers = set(map(int, user_input.replace("x =", "").split(" または ")))
     return question, answer
 
 def generate_problem(difficulty='normal'):
