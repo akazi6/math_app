@@ -228,25 +228,41 @@ def home():
                                problem_name=problem_name,
                                username=session['username'],
                                difficulty=difficulty)
+    if request.method == 'POST':
+    user_answer = request.form.get('answer')
+    correct_answer = request.form.get('correct_answer')
+    question = request.form.get('question')
+    problem_name = request.form.get('problem_name')    
 
-if isinstance(correct_answer, set):
-    try:
-        user_set = set(
-            int(x.replace('x', '').replace('=', '').strip())
-            for x in user_answer.split('または')
-        )
-        is_correct = (user_set == correct_answer)
-    except:
-        is_correct = False
-else:
-    is_correct = (user_answer.replace(' ', '') == str(correct_answer).replace(' ', ''))
-        if user_answer:
-            is_correct = (user_answer.replace(' ', '') == str(correct_answer).replace(' ', ''))
-            if is_correct:
-                session['correct_count'] += 1
-            result = '正解！' if is_correct else f'不正解。正しい答えは {correct_answer} です。'
-        else:
-            result = '入力が必要です。'
+    session['total_count'] += 1
+
+    is_correct = False
+
+    if user_answer:
+        # ⭐ここが重要（追加部分）
+        try:
+            # correct_answerがsetとして送られてくる場合は文字列なので復元
+            if correct_answer.startswith("{"):
+                correct_set = set(map(int, correct_answer.strip("{}").split(",")))
+
+                user_set = set(
+                    int(x.replace('x', '').replace('=', '').strip())
+                    for x in user_answer.split('または')
+                )
+
+                is_correct = (user_set == correct_set)
+            else:
+                is_correct = (user_answer.replace(' ', '') == correct_answer.replace(' ', ''))
+        except:
+            is_correct = False
+
+        if is_correct:
+            session['correct_count'] += 1
+
+        result = '正解！' if is_correct else f'不正解。正しい答えは {correct_answer} です。'
+    else:
+        result = '入力が必要です。'
+        
 
         # ユーザーのスコア更新
         username = session.get('username')
