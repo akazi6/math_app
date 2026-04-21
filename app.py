@@ -131,7 +131,6 @@ def generate_quadratic_equation():
     c = m * n
     question = f"x² + {b}x + {c} = 0 の解を求めよ。"
     answer = {-m, -n}
-    user_answers = set(map(int, user_input.replace("x =", "").split(" または ")))
     return question, answer
 
 def generate_problem(difficulty='normal'):
@@ -230,15 +229,17 @@ def home():
                                username=session['username'],
                                difficulty=difficulty)
 
-    if request.method == 'POST':
-        user_answer = request.form.get('answer')
-        correct_answer = request.form.get('correct_answer')
-        question = request.form.get('question')
-        problem_name = request.form.get('problem_name')    
-
-        session['total_count'] += 1
-
+if isinstance(correct_answer, set):
+    try:
+        user_set = set(
+            int(x.replace('x', '').replace('=', '').strip())
+            for x in user_answer.split('または')
+        )
+        is_correct = (user_set == correct_answer)
+    except:
         is_correct = False
+else:
+    is_correct = (user_answer.replace(' ', '') == str(correct_answer).replace(' ', ''))
         if user_answer:
             is_correct = (user_answer.replace(' ', '') == str(correct_answer).replace(' ', ''))
             if is_correct:
