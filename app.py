@@ -228,7 +228,7 @@ def home():
                                problem_name=problem_name,
                                username=session['username'],
                                difficulty=difficulty)
-    if request.method == 'POST':
+        if request.method == 'POST':
     user_answer = request.form.get('answer')
     correct_answer = request.form.get('correct_answer')
     question = request.form.get('question')
@@ -239,9 +239,7 @@ def home():
     is_correct = False
 
     if user_answer:
-        # ⭐ここが重要（追加部分）
         try:
-            # correct_answerがsetとして送られてくる場合は文字列なので復元
             if correct_answer.startswith("{"):
                 correct_set = set(map(int, correct_answer.strip("{}").split(",")))
 
@@ -262,6 +260,28 @@ def home():
         result = '正解！' if is_correct else f'不正解。正しい答えは {correct_answer} です。'
     else:
         result = '入力が必要です。'
+
+    # ⭐ここはifの外に出す（超重要）
+    username = session.get('username')
+    if username not in user_scores:
+        user_scores[username] = {'correct': 0, 'total': 0}
+
+    user_scores[username]['total'] += 1
+    if is_correct:
+        user_scores[username]['correct'] += 1
+
+    accuracy = f"{session['correct_count']} / {session['total_count']}（{(session['correct_count'] / session['total_count'] * 100):.1f}%）"
+
+    save_scores()
+
+    return render_template('index.html',
+                           question=question,
+                           correct_answer=correct_answer,
+                           result=result,
+                           problem_name=problem_name,
+                           accuracy=accuracy,
+                           username=username,
+                           difficulty=session.get('difficulty', 'normal'))
         
 
         # ユーザーのスコア更新
