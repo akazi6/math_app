@@ -147,6 +147,12 @@ def home():
     return render_template('index.html', question=question, correct_answer=correct_answer, 
                            problem_name=problem_name, username=username, difficulty=difficulty)
 
+@app.route('/')
+def index():
+    # トップページにアクセスしたら自動的に /home へ飛ばす
+    # (ログインしていなければ /home 内の処理でさらに /login へ飛ばされるので安全です)
+    return redirect(url_for('home'))
+
 # ... (register, login, logout, ranking などの他のルートはそのまま) ...
 
 if __name__ == '__main__':
