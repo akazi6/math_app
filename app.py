@@ -155,6 +155,20 @@ def home():
     acc = f"{session.get('correct_count', 0)} / {session.get('total_count', 0)}"
     return render_template('index.html', question=q, correct_answer=correct, problem_name=name, username=username, accuracy=acc, difficulty=difficulty)
 
+@app.route('/ranking')
+def ranking():
+    rankings = []
+    for uname, score in user_scores.items():
+        correct = score.get('correct', 0)
+        total = score.get('total', 0)
+        accuracy = (correct / total * 100) if total > 0 else 0
+        rankings.append((uname, correct, total, accuracy))
+
+    # 正答率が高い順にソート
+    rankings.sort(key=lambda x: x[3], reverse=True)
+
+    return render_template('ranking.html', rankings=rankings)
+
 @app.route('/logout')
 def logout():
     session.clear()
