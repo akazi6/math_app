@@ -1,0 +1,183 @@
+﻿:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #1a2533;
+  --sub: #516173;
+  --line: #d6deea;
+  --primary: #1e7be6;
+  --primary-dark: #1668c7;
+  --success: #127045;
+  --danger: #9c2433;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Yu Gothic UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  background: radial-gradient(circle at top right, #dbeafe, #f7fafc 55%);
+  color: var(--text);
+}
+
+.container {
+  width: min(760px, 92vw);
+  margin: 32px auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 16px 40px rgba(23, 43, 77, 0.08);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 4vw, 30px);
+}
+
+.subtitle {
+  margin: 0 0 20px;
+  color: var(--sub);
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.input,
+.select,
+.button {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  font-size: 16px;
+}
+
+.button {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.button:hover {
+  background: var(--primary-dark);
+}
+
+.button.secondary {
+  background: #f0f5ff;
+  color: #1d4f91;
+  border-color: #b5ccf3;
+}
+
+.button.secondary:hover {
+  background: #e4eeff;
+}
+
+.button.danger {
+  background: #fff3f4;
+  color: var(--danger);
+  border-color: #f3c5cc;
+}
+
+.button.danger:hover {
+  background: #ffe7ea;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fcfdff;
+}
+
+.problem {
+  font-size: clamp(24px, 5vw, 34px);
+  letter-spacing: 0.03em;
+  margin: 8px 0;
+}
+
+.kpi {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.result {
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.result.bad {
+  color: var(--danger);
+}
+
+.flash-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.flash {
+  background: #eef6ff;
+  border: 1px solid #c5daf8;
+  color: #194b84;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.table th {
+  color: var(--sub);
+  font-weight: 600;
+}
+
+.link {
+  color: #1258a7;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 540px) {
+  .container {
+    padding: 18px;
+    margin: 18px auto;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

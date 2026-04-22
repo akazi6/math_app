@@ -1,77 +1,67 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="ja">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>数学問題</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-            font-size: 16px;
-            line-height: 1.6;
-            max-width: 600px;
-            margin: auto;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 18px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-        a {
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-        .result, .accuracy {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>算数問題</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
-    <p>ようこそ、{{ username }} さん！ <a href="{{ url_for('logout') }}">ログアウト</a></p>
+  <main class="container">
+    <div class="topbar">
+      <p>{{ username }} さん</p>
+      <div class="inline-actions">
+        <a class="link" href="{{ url_for('ranking') }}">ランキング</a>
+        <a class="link" href="{{ url_for('logout') }}">ログアウト</a>
+      </div>
+    </div>
 
-    <h2>{{ problem_name }}の問題</h2>
-    <p><strong>問題:</strong> {{ question }}</p>
+    <h1 class="title">{{ problem_name }}</h1>
+    <div class="panel">
+      <p>問題:</p>
+      <p class="problem">{{ question }}</p>
+    </div>
 
-    <form method="POST">
-        <input type="text" name="answer" placeholder="答えを入力" required>
-        <input type="hidden" name="correct_answer" value="{{ correct_answer }}">
-        <input type="hidden" name="question" value="{{ question }}">
-        <input type="hidden" name="problem_name" value="{{ problem_name }}">
-        <button type="submit">送信</button>
+    <form method="POST" class="form" style="margin-top: 14px;">
+      <input class="input" type="text" name="answer" placeholder="答えを入力" required />
+      <input type="hidden" name="correct_answer" value="{{ correct_answer }}" />
+      <input type="hidden" name="question" value="{{ question }}" />
+      <input type="hidden" name="problem_name" value="{{ problem_name }}" />
+      <button class="button" type="submit">答える</button>
     </form>
 
-    {% if accuracy %}
-        <p class="accuracy">正答率: {{ accuracy }}</p>
-    {% endif %}
+    <p>正解数: <span class="kpi">{{ accuracy }}</span></p>
 
     {% if result %}
-        <p class="result">{{ result }}</p>
-        <form method="GET">
-            <button type="submit">次の問題へ</button>
-        </form>
+      <p class="result {% if '不正解' in result %}bad{% endif %}">{{ result }}</p>
+      <form method="GET" class="form">
+        <button class="button secondary" type="submit">次の問題へ</button>
+      </form>
     {% endif %}
 
-
-
-   <form method="GET" action="{{ url_for('home') }}">
-     <label>難易度を選んでください：</label>
-     <select name="difficulty">
-        <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>簡単</option>
-        <option value="normal" {% if difficulty == 'normal' %}selected{% endif %}>普通</option>
-        <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>難しい</option>
-     </select>
-     <input type="submit" value="問題を出題">
+    <form method="GET" action="{{ url_for('home') }}" class="form" style="margin-top: 8px;">
+      <label for="difficulty">難易度を選択</label>
+      <select class="select" id="difficulty" name="difficulty">
+        <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>初級</option>
+        <option value="normal" {% if difficulty == 'normal' %}selected{% endif %}>中級</option>
+        <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>上級</option>
+      </select>
+      <button class="button secondary" type="submit">問題を更新</button>
     </form>
- 
 
+    <form method="POST" action="{{ url_for('reset_accuracy') }}" class="form" style="margin-top: 8px;">
+      <button class="button danger" type="submit">正解率をリセット</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flash-list" style="margin-top: 12px;">
+          {% for message in messages %}
+            <li class="flash">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </main>
 </body>
 </html>

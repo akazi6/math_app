@@ -1,4 +1,4 @@
-import os
+﻿import os
 import random
 import json
 from flask import Flask, render_template, request, session, redirect, url_for, flash
@@ -10,7 +10,7 @@ app.secret_key = '5102'
 USER_FILE = 'users.json'
 DATA_FILE = 'user_scores.json'
 
-# --- 1. データ管理用関数 ---
+
 def load_users():
     global users
     try:
@@ -19,9 +19,11 @@ def load_users():
     except (FileNotFoundError, json.JSONDecodeError):
         users = {}
 
+
 def save_users():
     with open(USER_FILE, 'w', encoding='utf-8') as f:
         json.dump(users, f, ensure_ascii=False, indent=2)
+
 
 def load_scores():
     global user_scores
@@ -31,35 +33,43 @@ def load_scores():
     except (FileNotFoundError, json.JSONDecodeError):
         user_scores = {}
 
+
 def save_scores():
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(user_scores, f, ensure_ascii=False, indent=2)
 
+
 users = {}
 user_scores = {}
 
-# --- 2. 具体的な問題生成ロジック ---
+
 def generate_addition():
     a, b = random.randint(10, 99), random.randint(10, 99)
     return f"{a} + {b}", a + b
 
+
 def generate_subtraction():
     a, b = random.randint(10, 99), random.randint(10, 99)
-    if b > a: a, b = b, a
+    if b > a:
+        a, b = b, a
     return f"{a} - {b}", a - b
+
 
 def generate_multiplication():
     a, b = random.randint(10, 99), random.randint(10, 99)
     return f"{a} × {b}", a * b
+
 
 def generate_division():
     b = random.randint(2, 9)
     ans = random.randint(10, 99)
     return f"{b * ans} ÷ {b}", ans
 
+
 def generate_linear_equation():
     a, x, b = random.randint(1, 10), random.randint(1, 10), random.randint(0, 20)
-    return f"{a}x + {b} = {a * x + b} のときxは？", x
+    return f"{a}x + {b} = {a * x + b} のとき x は？", x
+
 
 def generate_problem(difficulty='normal'):
     problems = [('足し算', generate_addition), ('引き算', generate_subtraction)]
@@ -67,22 +77,40 @@ def generate_problem(difficulty='normal'):
         problems += [('掛け算', generate_multiplication), ('割り算', generate_division)]
     if difficulty == 'hard':
         problems += [('方程式', generate_linear_equation)]
-    
+
     name, func = random.choice(problems)
     q, a = func()
     return name, q, a
 
-# --- 3. ルート定義 ---
+
+def build_ranking_rows():
+    rows = []
+    for username, score in user_scores.items():
+        total = int(score.get('total', 0))
+        correct = int(score.get('correct', 0))
+        accuracy = round((correct / total) * 100, 1) if total > 0 else 0.0
+        rows.append({
+            'username': username,
+            'correct': correct,
+            'total': total,
+            'accuracy': accuracy,
+        })
+    rows.sort(key=lambda x: (x['accuracy'], x['correct']), reverse=True)
+    return rows
+
 
 @app.before_request
 def init_data():
-    if not users: load_users()
-    if not user_scores: load_scores()
+    if not users:
+        load_users()
+    if not user_scores:
+        load_scores()
+
 
 @app.route('/')
 def index():
-    # ルートURLにアクセスしたら /home へ（ログインチェックは home 内で行われる）
     return redirect(url_for('home'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -94,10 +122,10 @@ def login():
             session['correct_count'] = 0
             session['total_count'] = 0
             return redirect(url_for('home'))
-        else:
-            flash('ユーザー名かパスワードが間違っています。')
-            return redirect(url_for('login'))
+        flash('ユーザー名かパスワードが違います。')
+        return redirect(url_for('login'))
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -106,13 +134,14 @@ def register():
         p = request.form.get('password')
         if u and p:
             if u in users:
-                flash('そのユーザー名は既に使用されています。')
+                flash('そのユーザー名は既に使われています。')
                 return redirect(url_for('register'))
             users[u] = generate_password_hash(p)
             save_users()
-            flash('登録完了！ログインしてください。')
+            flash('登録完了。ログインしてください。')
             return redirect(url_for('login'))
     return render_template('register.html')
+
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
@@ -124,20 +153,17 @@ def home():
     session['difficulty'] = difficulty
 
     if request.method == 'POST':
-        # 回答時の処理
         ans = request.form.get('answer')
         correct = request.form.get('correct_answer')
         q = request.form.get('question')
         name = request.form.get('problem_name')
 
-        # 簡易的な一致判定（文字列として比較）
         is_correct = (str(ans).strip() == str(correct).strip())
 
         session['total_count'] = session.get('total_count', 0) + 1
         if is_correct:
             session['correct_count'] = session.get('correct_count', 0) + 1
-        
-        # スコア保存
+
         if username not in user_scores:
             user_scores[username] = {'correct': 0, 'total': 0}
         user_scores[username]['total'] += 1
@@ -145,21 +171,61 @@ def home():
             user_scores[username]['correct'] += 1
         save_scores()
 
-        res = '正解！' if is_correct else f'不正解。正解は {correct} です。'
+        result = '正解！' if is_correct else f'不正解。正解は {correct} です。'
         acc = f"{session['correct_count']} / {session['total_count']}"
-        
-        return render_template('index.html', question=q, correct_answer=correct, result=res, problem_name=name, accuracy=acc, username=username, difficulty=difficulty)
 
-    # GET時（新しい問題作成）
+        return render_template(
+            'index.html',
+            question=q,
+            correct_answer=correct,
+            result=result,
+            problem_name=name,
+            accuracy=acc,
+            username=username,
+            difficulty=difficulty,
+        )
+
     name, q, correct = generate_problem(difficulty)
     acc = f"{session.get('correct_count', 0)} / {session.get('total_count', 0)}"
-    return render_template('index.html', question=q, correct_answer=correct, problem_name=name, username=username, accuracy=acc, difficulty=difficulty)
+    return render_template(
+        'index.html',
+        question=q,
+        correct_answer=correct,
+        problem_name=name,
+        username=username,
+        accuracy=acc,
+        difficulty=difficulty,
+    )
+
+
+@app.route('/ranking')
+def ranking():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    rows = build_ranking_rows()
+    return render_template('ranking.html', ranking_rows=rows, username=session['username'])
+
+
+@app.route('/reset_accuracy', methods=['POST'])
+def reset_accuracy():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    session['correct_count'] = 0
+    session['total_count'] = 0
+    user_scores[username] = {'correct': 0, 'total': 0}
+    save_scores()
+    flash('正解率をリセットしました。')
+    return redirect(url_for('home'))
+
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
+
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
