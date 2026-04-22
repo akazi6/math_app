@@ -73,6 +73,7 @@ def generate_problem(difficulty='normal'):
     return name, q, a
 
 # --- 3. ルート定義 ---
+
 @app.before_request
 def init_data():
     if not users: load_users()
@@ -80,27 +81,36 @@ def init_data():
 
 @app.route('/')
 def index():
+    # ルートURLにアクセスしたら /home へ（ログインチェックは home 内で行われる）
     return redirect(url_for('home'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        u, p = request.form.get('username'), request.form.get('password')
+        u = request.form.get('username')
+        p = request.form.get('password')
         if u in users and check_password_hash(users[u], p):
             session['username'] = u
             session['correct_count'] = 0
             session['total_count'] = 0
             return redirect(url_for('home'))
-        flash('ログイン失敗')
+        else:
+            flash('ユーザー名かパスワードが間違っています。')
+            return redirect(url_for('login'))
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        u, p = request.form.get('username'), request.form.get('password')
+        u = request.form.get('username')
+        p = request.form.get('password')
         if u and p:
+            if u in users:
+                flash('そのユーザー名は既に使用されています。')
+                return redirect(url_for('register'))
             users[u] = generate_password_hash(p)
             save_users()
+            flash('登録完了！ログインしてください。')
             return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -114,21 +124,33 @@ def home():
     session['difficulty'] = difficulty
 
     if request.method == 'POST':
-        ans, correct, q, name = request.form.get('answer'), request.form.get('correct_answer'), request.form.get('question'), request.form.get('problem_name')
-        is_correct = (ans.strip() == str(correct).strip())
-        
+        # 回答時の処理
+        ans = request.form.get('answer')
+        correct = request.form.get('correct_answer')
+        q = request.form.get('question')
+        name = request.form.get('problem_name')
+
+        # 簡易的な一致判定（文字列として比較）
+        is_correct = (str(ans).strip() == str(correct).strip())
+
         session['total_count'] = session.get('total_count', 0) + 1
-        if is_correct: session['correct_count'] = session.get('correct_count', 0) + 1
+        if is_correct:
+            session['correct_count'] = session.get('correct_count', 0) + 1
         
-        if username not in user_scores: user_scores[username] = {'correct': 0, 'total': 0}
+        # スコア保存
+        if username not in user_scores:
+            user_scores[username] = {'correct': 0, 'total': 0}
         user_scores[username]['total'] += 1
-        if is_correct: user_scores[username]['correct'] += 1
+        if is_correct:
+            user_scores[username]['correct'] += 1
         save_scores()
 
-        res = '正解！' if is_correct else f'不正解。正解は {correct}'
+        res = '正解！' if is_correct else f'不正解。正解は {correct} です。'
         acc = f"{session['correct_count']} / {session['total_count']}"
+        
         return render_template('index.html', question=q, correct_answer=correct, result=res, problem_name=name, accuracy=acc, username=username, difficulty=difficulty)
 
+    # GET時（新しい問題作成）
     name, q, correct = generate_problem(difficulty)
     acc = f"{session.get('correct_count', 0)} / {session.get('total_count', 0)}"
     return render_template('index.html', question=q, correct_answer=correct, problem_name=name, username=username, accuracy=acc, difficulty=difficulty)
