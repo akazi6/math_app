@@ -73,6 +73,26 @@ def load_data_once():
     if not user_scores:
         load_scores()
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username in users and check_password_hash(users[username], password):
+            session['username'] = username
+            session['correct_count'] = 0
+            session['total_count'] = 0
+            return redirect(url_for('home'))
+        else:
+            flash('ユーザー名かパスワードが間違っています。')
+            return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    # ...登録処理...
+    return render_template('register.html')
+
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     if 'username' not in session:
