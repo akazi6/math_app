@@ -39,9 +39,68 @@ def save_scores():
 users = {}
 user_scores = {}
 
-# --- 問題生成ロジック (省略せず保持) ---
-# ... (generate_multiplicationなどの関数群) ...
-# ※ここにお手持ちの generate_... 関数をすべて入れてください
+# --- 具体的な問題生成ロジック（これを追加してください） ---
+
+def generate_addition():
+    a = random.randint(10, 99)
+    b = random.randint(10, 99)
+    return f"{a} + {b}", a + b
+
+def generate_subtraction():
+    a = random.randint(10, 99)
+    b = random.randint(10, 99)
+    if b > a: a, b = b, a
+    return f"{a} - {b}", a - b
+
+def generate_multiplication():
+    a = random.randint(10, 99)
+    b = random.randint(10, 99)
+    return f"{a} × {b}", a * b
+
+def generate_division():
+    b = random.randint(2, 9)
+    answer = random.randint(10, 99)
+    a = b * answer
+    return f"{a} ÷ {b}", answer
+
+def generate_proportional():
+    k = random.randint(1, 10)
+    x = random.randint(1, 20)
+    return f"y = {k}x のとき、x = {x} のときの y の値は？", k * x
+
+def generate_inverse_proportional():
+    x = random.randint(1, 10)
+    y = random.randint(1, 10)
+    k = x * y
+    return f"y = {k} ÷ x のとき、x = {x} のときの y の値は？", y
+
+def generate_linear_equation():
+    a = random.randint(1, 10)
+    x = random.randint(1, 10)
+    b = random.randint(0, 20)
+    c = a * x + b
+    return f"{a}x + {b} = {c} のとき、xの値は？", x
+
+def generate_factoring():
+    m = random.randint(1, 9)
+    n = random.randint(1, 9)
+    b, c = m + n, m * n
+    question = f"x² + {b}x + {c} を因数分解しなさい。"
+    answer = f"(x + {m})(x + {n})" if m <= n else f"(x + {n})(x + {m})"
+    return question, answer
+
+def generate_quadratic_equation():
+    m = random.randint(-10, 10)
+    n = random.randint(-10, 10)
+    while m == 0 or n == 0:
+        m, n = random.randint(-10, 10), random.randint(-10, 10)
+    b, c = -(m + n), m * n
+    # x^2 + bx + c = 0 の形 (解は m と n)
+    sign_b = "+" if b >= 0 else ""
+    sign_c = "+" if c >= 0 else ""
+    question = f"x² {sign_b}{b}x {sign_c}{c} = 0 の解を求めよ。"
+    answer = f"{{{m},{n}}}" # セット形式で返す
+    return question, answer
 
 def generate_problem(difficulty='normal'):
     easy_problems = [('足し算', generate_addition), ('引き算', generate_subtraction)]
