@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 import random
 import json  # インポートは一番上にまとめるのがベスト
@@ -129,4 +130,7 @@ def home():
 # ... (register, login, logout, ranking などの他のルートはそのまま) ...
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True) # debug=Trueにするとエラーが見やすくなります
+    # Renderなどの環境変数のポートを読み込み、なければ5000を使う
+    port = int(os.environ.get("PORT", 5000))
+    # host='0.0.0.0' は外部からのアクセスを許可するために必須です
+    app.run(host='0.0.0.0', port=port)
