@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ランキング</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <h1 class="title" style="margin: 0;">ランキング</h1>
+      <div class="inline-actions">
+        <a class="link" href="{{ url_for('home') }}">問題へ戻る</a>
+        <a class="link" href="{{ url_for('logout') }}">ログアウト</a>
+      </div>
+    </div>
+
+    <p class="subtitle">正解率の高い順に表示しています（同率は正解数順）</p>
+
+    <div class="panel">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>順位</th>
+            <th>ユーザー</th>
+            <th>正解</th>
+            <th>総問題数</th>
+            <th>正解率</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in ranking_rows %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ row.username }}{% if row.username == username %} (あなた){% endif %}</td>
+              <td>{{ row.correct }}</td>
+              <td>{{ row.total }}</td>
+              <td>{{ row.accuracy }}%</td>
+            </tr>
+          {% endfor %}
+          {% if not ranking_rows %}
+            <tr>
+              <td colspan="5">まだデータがありません。</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
